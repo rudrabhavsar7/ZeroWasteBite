@@ -19,6 +19,12 @@ const userSchema = new mongoose.Schema(
         required: true, // [longitude, latitude]
       },
     },
+    userType: {
+      type: String,
+      enum: ["individual", "restaurant", "grocery_store", "caterer", "other"],
+      default: "individual",
+      required: true
+    },
     refreshToken: {
       type: String,
     },
