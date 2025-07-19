@@ -59,3 +59,4 @@ const donationSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+export const Donation = mongoose.model("Donation",donationSchema);
