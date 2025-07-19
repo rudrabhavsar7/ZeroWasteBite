@@ -29,7 +29,9 @@ connectDB().then(
 //router import
 
 import userRouter from "./routes/userRoutes.js"
+import modelRouter from "./routes/modelRoutes.js"
 
 //routes
 
 app.use("/api/users",userRouter);
+app.use("/api/model/predict",modelRouter);

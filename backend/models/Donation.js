@@ -32,9 +32,14 @@ const donationSchema = new mongoose.Schema(
     },
 
     // ML Prediction Output
-    is_safe: {
-      type: Boolean,
-      default: null, // filled after prediction
+    expiryPrediction: {
+      safeForHours: { type: Number }, // e.g., 6 hours
+      confidence: { type: Number }, // 0 to 1 or 0 to 100%
+      riskLevel: {
+        type: String,
+        enum: ["low", "medium", "high"],
+        default: "medium"
+      }
     },
 
     description: {
