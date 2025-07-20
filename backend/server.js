@@ -30,8 +30,10 @@ connectDB().then(
 
 import userRouter from "./routes/userRoutes.js"
 import modelRouter from "./routes/modelRoutes.js"
+import donationRouter from "./routes/donationRoutes.js"
 
 //routes
 
 app.use("/api/users",userRouter);
 app.use("/api/model/predict",modelRouter);
+app.use("/api/donation",donationRouter);
