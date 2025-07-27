@@ -46,6 +46,12 @@ const registerVolunteer = asyncHandler(async (req, res) => {
 
   let existingUser = await User.findOne({ email });
 
+  if(existingUser && existingUser.role !== "volunteer"){
+    throw new ApiError(400, `There Already Exists a ${existingUser.role} with this Email Id Try With Another Email Id`);
+  }else if(existingUser){
+    throw new ApiError(400,"Volunteer Already Exists");
+  }
+
   if (!existingUser) {
     existingUser = await User.create({
       name,
@@ -75,7 +81,7 @@ const registerVolunteer = asyncHandler(async (req, res) => {
 
   return res
     .status(201)
-    .json(new ApiResponse(200, volunteer, "Volunteer Registerd Successfully"));
+    .json(new ApiResponse(200, volunteer, "Volunteer Registered Successfully"));
 });
 
 const loginVolunteer = asyncHandler(async (req, res) => {

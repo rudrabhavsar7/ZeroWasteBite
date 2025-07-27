@@ -32,6 +32,7 @@ import userRouter from "./routes/userRoutes.js"
 import modelRouter from "./routes/modelRoutes.js"
 import donationRouter from "./routes/donationRoutes.js"
 import volunteerRouter from "./routes/volunteerRoutes.js"
+import ngoRouter from "./routes/ngoRoutes.js"
 
 //routes
 
@@ -39,3 +40,4 @@ app.use("/api/users",userRouter);
 app.use("/api/model/predict",modelRouter);
 app.use("/api/donation",donationRouter);
 app.use("/api/volunteer",volunteerRouter);
+app.use("/api/ngo",ngoRouter);
