@@ -1,4 +1,5 @@
-import mongoose from "mongoose"
+import mongoose from "mongoose";
+import { Volunteer } from "./Volunteer.js";
 
 const donationSchema = new mongoose.Schema(
   {
@@ -38,8 +39,8 @@ const donationSchema = new mongoose.Schema(
       riskLevel: {
         type: String,
         enum: ["low", "medium", "high"],
-        default: "medium"
-      }
+        default: "medium",
+      },
     },
 
     description: {
@@ -59,4 +60,51 @@ const donationSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export const Donation = mongoose.model("Donation",donationSchema);
+// donationSchema.post("save", async function () {
+//   const { riskLevel } = this.expiryPrediction;
+//   const Volunteers = await Volunteer.find();
+
+//   console.log(Volunteers);
+
+//   if (riskLevel === "high") {
+//     console.log("HIgh");
+//   }
+// });
+
+// donationSchema.post("save", async function (res) {
+//   const volunteerId = res.claimedBy;
+//   const donationId = res._id;
+
+//   const volunteer = await Volunteer.findOneAndUpdate(
+//     { userId: volunteerId },
+//     {
+//       $push: { assignedDonations: donationId },
+//     },
+//     { new: true }
+//   );
+// });
+
+donationSchema.post("save", async function (doc) {
+
+  if (this.isNew) {
+    if (doc.expiryPrediction && doc.expiryPrediction.riskLevel === "high") {
+      console.log("Processing high-risk donation:", doc._id);
+      // Your high-risk operations
+    }
+  } else {
+    // This runs for updated donations (claiming logic)
+    if (doc.claimedBy && doc.status === "claimed") {
+      console.log("Processing claimed donation:", doc._id);
+      
+      const volunteer = await Volunteer.findOneAndUpdate(
+        { userId: doc.claimedBy },
+        { $push: { assignedDonations: doc._id } },
+        { new: true }
+      );
+      console.log("Volunteer updated:", volunteer);
+    }
+  }
+});
+
+
+export const Donation = mongoose.model("Donation", donationSchema);

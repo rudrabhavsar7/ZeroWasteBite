@@ -65,4 +65,56 @@ const addDonation = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, donation, "Donation Added Successfully"));
 });
 
-export { addDonation };
+const viewDonations = asyncHandler(async (req, res) => {
+  const user = req.user;
+
+  if (user.role === "donor") throw new ApiError(401, "Unauthorized Access");
+
+  const donations = await Donation.find();
+
+  if (!donations)
+    return res
+      .status(200)
+      .json(new ApiResponse(200, [], "No Donations Available"));
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, donations, "Donations Fetched Successfully"));
+});
+
+const viewAvailableDonations = asyncHandler(async (req, res) => {
+  const user = req.user;
+
+  if (user.role === "donor") throw new ApiError(401, "Unauthorized Access");
+
+  const donation = await Donation.find({
+    status: "available",
+    claimedBy: null,
+  });
+
+  return res.status(200).json(new ApiResponse(200, donation, "Successful"));
+});
+
+const claimDonation = asyncHandler(async (req, res) => {
+  const user = req.user;
+
+  if (user.role === "donor") throw new ApiError(401, "Unauthorized Access");
+
+  const { donationId } = req.body;
+
+  if (!donationId) throw new ApiError(401, "Error fetching Donation Id");
+
+  const donation = await Donation.findOne({_id:donationId,claimedBy:null})
+  
+  if (!donation) throw new ApiError(404, "Donation Not Found or Already Claimed");
+  donation.status = "claimed";
+  donation.claimedBy = user._id;
+
+  await donation.save({validateBeforeSave:false});
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, donation, "Donation Claimed Successfully"));
+});
+
+export { addDonation, viewDonations, viewAvailableDonations, claimDonation };
