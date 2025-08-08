@@ -16,5 +16,3 @@ export const sendMail = asyncHandler(async (to, subject, msg) => {
     html: msg,
   });
 });
-
-sendMail("rbhavsar1061974@gmail.com", "Test", "HEllo");

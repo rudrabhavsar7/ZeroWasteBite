@@ -1,11 +1,16 @@
 import mongoose from "mongoose";
 import { Volunteer } from "./Volunteer.js";
+import { sendMail } from "../utils/NodeMailer.js";
 
 const donationSchema = new mongoose.Schema(
   {
     donor: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
+      required: true,
+    },
+    title: {
+      type: "String",
       required: true,
     },
     food_type: {
@@ -31,7 +36,10 @@ const donationSchema = new mongoose.Schema(
       enum: ["dry", "humid"],
       required: true,
     },
-
+    location: {
+      type: { type: String, enum: ["Point"], default: "Point" },
+      coordinates: { type: [Number], required: true },
+    },
     // ML Prediction Output
     expiryPrediction: {
       safeForHours: { type: Number }, // e.g., 6 hours
@@ -60,6 +68,8 @@ const donationSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+donationSchema.index({ location: "2dsphere" });
+
 // donationSchema.post("save", async function () {
 //   const { riskLevel } = this.expiryPrediction;
 //   const Volunteers = await Volunteer.find();
@@ -85,26 +95,16 @@ const donationSchema = new mongoose.Schema(
 // });
 
 donationSchema.post("save", async function (doc) {
+  if (doc.claimedBy && doc.status === "claimed") {
+    console.log("Processing claimed donation:", doc._id);
 
-  if (this.isNew) {
-    if (doc.expiryPrediction && doc.expiryPrediction.riskLevel === "high") {
-      console.log("Processing high-risk donation:", doc._id);
-      // Your high-risk operations
-    }
-  } else {
-    // This runs for updated donations (claiming logic)
-    if (doc.claimedBy && doc.status === "claimed") {
-      console.log("Processing claimed donation:", doc._id);
-      
-      const volunteer = await Volunteer.findOneAndUpdate(
-        { userId: doc.claimedBy },
-        { $push: { assignedDonations: doc._id } },
-        { new: true }
-      );
-      console.log("Volunteer updated:", volunteer);
-    }
+    const volunteer = await Volunteer.findOneAndUpdate(
+      { userId: doc.claimedBy },
+      { $push: { assignedDonations: doc._id } },
+      { new: true }
+    );
+    console.log("Volunteer updated:", volunteer);
   }
 });
-
 
 export const Donation = mongoose.model("Donation", donationSchema);
