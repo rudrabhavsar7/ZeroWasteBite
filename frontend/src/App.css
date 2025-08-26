@@ -1,1 +1,17 @@
 @import "tailwindcss";
+
+
+@theme {
+    --color-primary: #A3F893;
+    --color-primary-content: #1c8309;
+    --color-primary-dark: #7af563;
+    --color-secondary: #fdbc29;
+    --color-secondary-dark: #f1a802;
+    --color-white: #fefbf2;
+}
+
+@layer base {
+    * {
+        font-family: 'Montserrat Variable', sans-serif;
+    }
+}
