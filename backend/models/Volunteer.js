@@ -17,7 +17,10 @@ const volunteerSchema = new mongoose.Schema(
       enum: ["bike", "car", "none"],
       default: "bike",
     },
-    serviceRadius: Number,
+    serviceRadius: {
+      type:Number,
+      required:true
+    },
     location: {
       type: { type: String, enum: ["Point"], default: "Point" },
       coordinates: { type: [Number], required: true },
