@@ -53,6 +53,10 @@ const addDonation = asyncHandler(async (req, res) => {
   if (!riskLevel) throw new ApiError(500, "Risk Prediction Error");
   if (!safeForHours) throw new ApiError(500, "Safe For Hours Prediction Error");
 
+  const location = user.location.coordinates;
+
+  console.log(location);
+
   const donation = await Donation.create({
     donor: user._id,
     title,
@@ -68,7 +72,11 @@ const addDonation = asyncHandler(async (req, res) => {
     },
     description,
     location: {
+<<<<<<< HEAD
       coordinates,
+=======
+      coordinates: location,
+>>>>>>> e7a2da55eca1449d06f41b0cf18c5bd329b22a3a
     },
   });
 
@@ -127,6 +135,7 @@ const addDonation = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, donation, "Donation Added Successfully"));
 });
 
+<<<<<<< HEAD
 const viewUserDonations = asyncHandler(async (req, res) => {
   const user = req.user;
   const donations = await Donation.find({ donor: user._id });
@@ -141,6 +150,8 @@ const viewUserDonations = asyncHandler(async (req, res) => {
     );
 });
 
+=======
+>>>>>>> e7a2da55eca1449d06f41b0cf18c5bd329b22a3a
 const viewDonations = asyncHandler(async (req, res) => {
   const user = req.user;
 
@@ -241,6 +252,7 @@ const updateDonationDetails = asyncHandler(async (req, res) => {
     );
 });
 
+<<<<<<< HEAD
 const viewVolunteerAssignedDonations = asyncHandler(async (req, res) => {
   const user = req.user;
   if (user.role === "donor") throw new ApiError(401, "Unauthorized Access");
@@ -266,4 +278,12 @@ export {
   claimDonation,
   updateDonationDetails,
   viewVolunteerAssignedDonations,
+=======
+export {
+  addDonation,
+  viewDonations,
+  viewAvailableDonations,
+  claimDonation,
+  updateDonationDetails,
+>>>>>>> e7a2da55eca1449d06f41b0cf18c5bd329b22a3a
 };

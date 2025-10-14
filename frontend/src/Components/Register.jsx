@@ -127,8 +127,8 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white pt-28 pb-10 flex items-center justify-center px-4">
-      <motion.div variants={cardVariants} initial="initial" animate="animate" className="w-full max-w-xl rounded-2xl border border-primary-content/10 shadow-xl bg-white">
+    <div className="min-h-screen bg-gradient-to-br from-primary/10 via-white to-secondary/10 pt-28 pb-10 flex items-center justify-center px-4">
+      <motion.div variants={cardVariants} initial="initial" animate="animate" className="w-full max-w-xl rounded-2xl border border-white/30 shadow-xl bg-white/70 backdrop-blur-sm">
         <div className="p-8">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-primary-content">Create your<span className="text-secondary font-semibold"> Donor</span> account</h1>

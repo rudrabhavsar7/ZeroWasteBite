@@ -42,7 +42,10 @@ const Login = () => {
       console.log("User logged in:", user);
       setUser(user);
 			toast.success('Login successful!');
-      navigate('/');
+      if(user.role === 'volunteer')
+        navigate('/volunteer');
+      else
+        navigate('/');
     } catch (err) {
       console.error(err);
       setError(err.response?.data?.message || 'Login failed. Try again.');
@@ -52,13 +55,13 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white pt-28 pb-10 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-primary/10 via-white to-secondary/10 pt-28 pb-10 flex items-center justify-center px-4">
       {/* Card container with subtle entrance */}
       <motion.div
         initial={{ opacity: 0, y: 20, filter: 'blur(6px)', scale: 0.98 }}
         animate={{ opacity: 1, y: 0, filter: 'blur(0px)', scale: 1 }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
-        className="w-full max-w-md rounded-2xl border-1 border-primary-content/50 shadow-xl bg-white"
+        className="w-full max-w-md rounded-2xl border border-white/30 shadow-xl bg-white/70 backdrop-blur-sm"
       >
         <div className="p-8">
           <div className="text-center mb-8">
@@ -127,7 +130,7 @@ const Login = () => {
               whileHover={{ scale: loading ? 1 : 1.02 }}
               whileTap={{ scale: loading ? 1 : 0.98 }}
               disabled={loading}
-              className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-secondary text-primary-content font-semibold py-3 shadow hover:shadow-md transition-shadow disabled:opacity-60 disabled:cursor-not-allowed"
+              className="w-full inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition-all duration-300 shadow focus:outline-none focus:ring-4 bg-secondary text-primary-content hover:brightness-95 py-3 px-4 disabled:opacity-60 disabled:cursor-not-allowed hover:shadow-xl"
             >
               <span>{loading ? 'Signing in…' : 'Sign In'}</span>
               <IconArrowRight size={18} />
