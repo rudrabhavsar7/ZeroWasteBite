@@ -1,15 +1,49 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
-    <footer className="bg-white py-16">
+  <footer className="py-16">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
           {/* Contact Section */}
           <div>
-            <h3 className="text-xl font-semibold text-gray-800 mb-6">
+      <h3 className="text-xl font-semibold text-primary-content mb-6">
               Please feel free to get in touch with us
             </h3>
+          </div>
+
+          {/* Connect Section */}
+          <div className="flex items-start space-x-3">
+            <div className="flex-shrink-0 mt-1">
+              <svg
+                className="w-5 h-5 text-blue-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+              </svg>
+            </div>
+            <div>
+              <h4 className="font-medium text-primary-content mb-2">Connect With Us</h4>
+              <div className="flex flex-col">
+              <Link to='/login' className="text-gray-600 text-sm">Donor</Link>
+              <Link to='/login' className="text-gray-600 text-sm">Volunteer</Link>
+              <Link to='/login' className="text-gray-600 text-sm">NGO</Link>
+              </div>
+            </div>
           </div>
 
           {/* Location Section */}
@@ -36,7 +70,7 @@ const Footer = () => {
               </svg>
             </div>
             <div>
-              <h4 className="font-medium text-gray-800 mb-2">Our Location</h4>
+              <h4 className="font-medium text-primary-content mb-2">Our Location</h4>
               <p className="text-gray-600 text-sm">
                 401 Broadway, 24th Floor, Orchard Cloud
                 <br />
@@ -63,7 +97,7 @@ const Footer = () => {
               </svg>
             </div>
             <div>
-              <h4 className="font-medium text-gray-800 mb-2">
+              <h4 className="font-medium text-primary-content mb-2">
                 How Can We Help?
               </h4>
               <div className="text-gray-600 text-sm space-y-1">
@@ -79,10 +113,8 @@ const Footer = () => {
           <div className="flex flex-col md:flex-row justify-between items-center">
             {/* Logo */}
             <div className="flex items-center space-x-2 mb-4 md:mb-0">
-              <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold text-sm">Z</span>
-              </div>
-              <span className="text-lg font-semibold text-gray-800">
+              <img src="logo.png" className="h-15 w-15" alt="" />
+              <span className="text-lg font-semibold text-primary-content">
                 ZeroWasteBite
               </span>
             </div>

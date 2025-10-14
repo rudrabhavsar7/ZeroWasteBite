@@ -64,6 +64,39 @@ const userStore = (set, get) => ({
       get().clearUser();
     }
   },
+
+  //donation 
+
+  donate: async (donation) =>{
+    try{
+      const resp = await axios.post('/donation/add',{
+        title: donation.title,
+        food_type: donation.food_type,
+        storage: donation.storage,
+        environment: donation.environment,
+        is_sealed: donation.is_sealed,
+        time_since_prep: donation.time_since_prep,
+        confidence: donation.confidence,
+        description: donation.description || "",
+        coordinates: donation.location.coordinates
+      }, { withCredentials: true });
+
+      return resp.data?.data;
+    } catch(e){
+      console.error(e);
+    }
+  },
+
+  //donation history
+
+  getDonationHistory: async () =>{
+    try{
+      const resp = await axios.get('/donation/view/user', { withCredentials: true });
+      return resp.data?.data;
+    } catch(e){
+      console.error(e);
+    }
+  }
 });
 
 const useUserStore = create(

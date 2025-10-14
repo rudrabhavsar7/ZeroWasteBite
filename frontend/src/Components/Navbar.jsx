@@ -22,11 +22,30 @@ const Navbar = () => {
     fetchUser();
   }, [hydrate]);
 
-  const Items = [
-    { name: "Home", path: "/" },
-    { name: "Donate", path: "/donate" },
-    { name: "Donations", path: "/donations" },
-  ];
+  const Items = (() => {
+    switch (user?.role) {
+      case "donor":
+        return [
+          { name: "Home", path: "/" },
+          { name: "Donate", path: "/donate" },
+          { name: "Donations", path: "/donations" },
+        ];
+      case "volunteer":
+        return [
+          { name: "Home", path: "/volunteer" },
+          { name: "Available Donations", path: "/volunteer/available-donations" },
+          { name: "Assigned Donations", path: "/volunteer/assigned-donations" },
+        ];
+      default:
+        return [
+          { name: "Home", path: "/" },
+          { name: "Donate", path: "/donate" },
+          { name: "Donations", path: "/donations" },
+        ];
+    }
+  })();
+  
+  
   const [isOpen, setIsOpen] = useState(false);
 
   const parentVariants = {
@@ -72,7 +91,13 @@ const Navbar = () => {
       <div className="flex flex-row items-center justify-between ">
         <img
           src="logo.png"
-          onClick={() => navigate("/")}
+          onClick={() => {
+            if (user?.role === "volunteer") {
+              navigate("/volunteer");
+            } else {
+              navigate("/");
+            }
+          }}
           className="h-20 w-20"
         />
         <button
