@@ -206,6 +206,7 @@ const Register = () => {
           </form>
 
           <p className="mt-6 text-center text-sm text-gray-600">Already have an account? <Link to="/login" className="text-secondary hover:text-secondary-dark font-semibold">Sign in</Link></p>
+          <p className="mt-2 text-center text-xs text-gray-500">Want to volunteer instead? <Link to="/volunteer/register" className="text-secondary hover:text-secondary-dark font-semibold">Create a volunteer account</Link></p>
         </div>
       </motion.div>
     </div>

@@ -4,23 +4,36 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { IconLogout, IconX } from "@tabler/icons-react";
 import useUserStore from "../app/userStore";
+import useVolunteerStore from "../app/volunteerStore";
+import useNgoStore from "../app/ngoStore";
 import toast from "react-hot-toast";
 
 const Navbar = () => {
   const navigate = useNavigate();
   const user = useUserStore((state) => state.user);
-  const hydrate = useUserStore((state) => state.hydrate);
-  const logout = useUserStore((state) => state.logout);
+  const hydrateUser = useUserStore((state) => state.hydrate);
+  const logoutUser = useUserStore((state) => state.logout);
+
+  const volunteer = useVolunteerStore((s) => s.volunteer);
+  const hydrateVolunteer = useVolunteerStore((s) => s.hydrate);
+  const logoutVolunteer = useVolunteerStore((s) => s.logout);
+  const ngo = useNgoStore((s) => s.ngo);
+  const hydrateNgo = useNgoStore((s) => s.hydrate);
+  const logoutNgo = useNgoStore((s) => s.logout);
 
   useEffect(() => {
-    const fetchUser = async () => {
-      const success = await hydrate();
-      if (!success) {
-        console.error("Failed to hydrate user");
+    const hydrateAll = async () => {
+      const [uOk, vOk, nOk] = await Promise.all([
+        hydrateUser().catch(() => false),
+        hydrateVolunteer().catch(() => false),
+        hydrateNgo().catch(() => false),
+      ]);
+      if (!uOk && !vOk && !nOk) {
+        console.warn("Hydration skipped or failed for all stores");
       }
     };
-    fetchUser();
-  }, [hydrate]);
+    hydrateAll();
+  }, [hydrateUser, hydrateVolunteer, hydrateNgo]);
 
   const Items = (() => {
     switch (user?.role) {
@@ -36,6 +49,11 @@ const Navbar = () => {
           { name: "Available Donations", path: "/volunteer/available-donations" },
           { name: "Assigned Donations", path: "/volunteer/assigned-donations" },
         ];
+      case "ngo":
+            return [
+              { name: "Home", path: "/ngo" },
+              { name: "Approvals", path: "/ngo/volunteers" },
+            ];
       default:
         return [
           { name: "Home", path: "/" },
@@ -94,6 +112,8 @@ const Navbar = () => {
           onClick={() => {
             if (user?.role === "volunteer") {
               navigate("/volunteer");
+            } else if (user?.role === "ngo") {
+              navigate("/ngo");
             } else {
               navigate("/");
             }
@@ -164,7 +184,7 @@ const Navbar = () => {
             >
               <IconX />
             </motion.button>
-            {user && (
+            {(user || volunteer) && (
               <motion.button
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -174,7 +194,10 @@ const Navbar = () => {
                   delay: 0.5,
                 }}
                 onClick={() => {
-                  logout();
+                  // Try both logouts
+                  logoutUser();
+                  logoutVolunteer();
+                  logoutNgo();
                   toast.success("Logout successful!");
                   navigate("/");
                   setIsOpen(false);
@@ -206,7 +229,7 @@ const Navbar = () => {
               }}
               className="flex flex-col items-start justify-center gap-10 h-full text-white px-10"
             >
-              {user &&
+              {(user || volunteer || ngo) &&
                 Items.map((item, index) => (
                   <motion.li
                     key={index}

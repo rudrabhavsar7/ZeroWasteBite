@@ -156,7 +156,11 @@ const Login = () => {
 
           <p className="mt-6 text-center text-sm text-gray-600">
             New here?{' '}
-            <Link to="/register" className="text-secondary hover:text-secondary-dark font-semibold">Create an account</Link>
+            <Link to="/register" className="text-secondary hover:text-secondary-dark font-semibold">Create a donor account</Link>
+          </p>
+          <p className="mt-2 text-center text-xs text-gray-500">
+            Are you a volunteer?{' '}
+            <Link to="/volunteer/login" className="text-secondary hover:text-secondary-dark font-semibold">Sign in as volunteer</Link>
           </p>
         </div>
       </motion.div>

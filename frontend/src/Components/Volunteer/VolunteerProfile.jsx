@@ -1,45 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import useVolunteerStore from "../../app/volunteerStore";
+import useUserStore from "../../app/userStore";
 
 const VolunteerProfile = () => {
   const navigate = useNavigate();
-  const [volunteer, setVolunteer] = useState(null);
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const volunteer = useVolunteerStore((state) => state.volunteer);
+  const user = useUserStore((state) => state.user);
   const [error] = useState("");
-
-  useEffect(() => {
-    // Dummy data for demonstration - replace with actual API calls
-    const dummyUser = {
-      _id: "vol123",
-      name: "John Doe",
-      email: "john.volunteer@example.com",
-      phone: "+1234567890",
-      role: "volunteer",
-      userType: "individual",
-      location: { coordinates: [77.5946, 12.9716] },
-    };
-
-    const dummyVolunteer = {
-      _id: "volunteer123",
-      userId: dummyUser._id,
-      availability: "full-time",
-      vehicleType: "car",
-      serviceRadius: 15,
-      location: { type: "Point", coordinates: [77.5946, 12.9716] },
-      isVerified: true,
-      assignedDonations: ["donation1", "donation2"],
-      createdAt: "2024-01-15T10:00:00Z",
-    };
-
-    setUser(dummyUser);
-    setVolunteer(dummyVolunteer);
-    setLoading(false);
-  }, []);
-
-  if (loading) {
-    return <div className="loading">Loading volunteer profile...</div>;
-  }
 
   if (!volunteer || !user) {
     return <div className="error">Failed to load volunteer profile.</div>;

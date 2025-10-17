@@ -7,58 +7,23 @@ const AvailableDonations = () => {
   const navigate = useNavigate();
   const getDonations = useVolunteerStore((s) => s.getDonations);
   const claimDonation = useVolunteerStore((s) => s.claimDonation);
-
-  // No custom CSS injection needed; using Tailwind animate classes
-  const [volunteer, setVolunteer] = useState(null);
+  const volunteer = useVolunteerStore((s) => s.volunteer);
   const [availableDonations, setAvailableDonations] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [addressMap, setAddressMap] = useState({}); // {_id: address}
 
   useEffect(() => {
-    // Dummy volunteer data for verification
-    const dummyVolunteer = {
-      _id: "volunteer123",
-      userId: "vol123",
-      availability: "full-time",
-      vehicleType: "car",
-      serviceRadius: 15,
-      location: { type: "Point", coordinates: [77.5946, 12.9716] },
-      isVerified: true,
-      assignedDonations: ["donation1", "donation2"],
-    };
-
-    const dummyAvailableDonations = [
-      {
-        _id: "donation1",
-        title: "Fresh Vegetables",
-        food_type: "raw",
-        storage: "fridge",
-        time_since_prep: 2,
-        is_sealed: true,
-        environment: "dry",
-        location: { coordinates: [77.6026, 12.9698] },
-        expiryPrediction: {
-          safeForHours: 24,
-          confidence: 0.85,
-          riskLevel: "low",
-        },
-        description: "Fresh vegetables from restaurant surplus",
-        status: "available",
-        createdAt: "2024-01-15T08:00:00Z",
-      },
-    ];
 
     const fetchDonations = async () => {
       const resp = await getDonations();
       console.log("Fetched donations:", resp);
+      resp.filter((d) => d.status === "available");
       setAvailableDonations( resp );
       return resp;
     }
 
     fetchDonations();
-    setVolunteer(dummyVolunteer);
-    setAvailableDonations( dummyAvailableDonations );
   }, [getDonations]);
 
   const claimDonationById = async (donationId) => {

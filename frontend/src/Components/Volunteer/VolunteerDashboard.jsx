@@ -1,4 +1,4 @@
-import React, {  useEffect, useState } from "react";
+import React, {  useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useUserStore from "../../app/userStore";
 import useVolunteerStore from "../../app/volunteerStore";
@@ -6,95 +6,88 @@ import useVolunteerStore from "../../app/volunteerStore";
 const VolunteerDashboard = () => {
   const navigate = useNavigate();
   const user = useUserStore((state) => state.user);
-  const getAssignedDonations = useVolunteerStore((state) => state.getAssignedDonations);
-  const getDonations = useVolunteerStore((state) => state.getDonations);
-  const [volunteer, setVolunteer] = useState(null);
+  const volunteer = useVolunteerStore((state) => state.volunteer);
+  const getAssignedDonations = useVolunteerStore((s) => s.getAssignedDonations);
+  const getDonations = useVolunteerStore((s) => s.getDonations);
   const [assignedDonations, setAssignedDonations] = useState([]);
   const [availableDonations, setAvailableDonations] = useState([]);
-  const [stats, setStats] = useState({
-    totalAssigned: 0,
-    completed: 0,
-    pending: 0,
-    availableNearby: 0,
-  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    const dummyVolunteer = {
-      _id: "volunteer123",
-      userId:1,
-      availability: "full-time",
-      vehicleType: "car",
-      serviceRadius: 15,
-      location: { type: "Point", coordinates: [77.5946, 12.9716] },
-      isVerified: true,
-      assignedDonations: ["donation1", "donation2", "donation3"],
-      createdAt: "2024-01-15T10:00:00Z",
+    let cancelled = false;
+    const fetchData = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const [assigned, available] = await Promise.all([
+          getAssignedDonations().catch(() => []),
+          getDonations().catch(() => []),
+        ]);
+        if (!cancelled) {
+          setAssignedDonations(Array.isArray(assigned) ? assigned : []);
+          setAvailableDonations(Array.isArray(available) ? available : []);
+        }
+      } catch {
+        if (!cancelled) setError("Failed to load dashboard data");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
     };
+    fetchData();
+    return () => { cancelled = true; };
+  }, [getAssignedDonations, getDonations]);
 
-    const dummyStats = {
-      totalAssigned: 8,
-      completed: 5,
-      pending: 3,
-      availableNearby: 12,
-    };
-    
-    const fetchAssignedDonations = async () => {
-      const data = await getAssignedDonations();
-      setAssignedDonations(data || []);
-    };
+  const stats = useMemo(() => {
+    const totalAssigned = assignedDonations.length;
+    const pending = assignedDonations.filter((d) => d.status === "claimed").length;
+    const picked = assignedDonations.filter((d) => d.status === "picked").length;
+    const expired = assignedDonations.filter((d) => d.status === "expired").length;
+    const available = availableDonations.filter((d) => d.status === "available").length;
+    return { totalAssigned, pending, picked, expired, available };
+  }, [assignedDonations, availableDonations]);
 
-    const fetchAvailableDonations = async () => {
-      const data = await getDonations();
-      setAvailableDonations(data || []);
-    };
-
-    fetchAssignedDonations();
-    fetchAvailableDonations();
-
-    console.log("Assigned Donations:", assignedDonations);
-    console.log("Available Donations:", availableDonations);
-
-    setVolunteer(dummyVolunteer);
-    setStats(dummyStats);
-  }, []);
-
-  if (!user || !volunteer) {
+  if (!volunteer) {
     return <div className="loading">Loading dashboard...</div>;
   }
 
-  console.log("Volunteer Data:", user);
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/10 via-white to-secondary/10 py-10 mt-20">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-primary-content to-secondary bg-clip-text text-transparent">
-            Welcome, {user.name}!
+            Welcome, {user?.name || "Volunteer"}!
           </h1>
-          <p className="text-gray-600 mt-2">Volunteer Dashboard</p>
-          {!volunteer.isVerified && (
-            <div className="mt-4 rounded-xl border border-yellow-200 bg-yellow-50 text-yellow-800 px-4 py-3 inline-block">
-              ⚠️ Your account is pending verification. Contact admin to start claiming donations.
-            </div>
+          <div className="mt-2 flex items-center justify-center gap-3">
+            <span className="text-gray-600">Volunteer Dashboard</span>
+            <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${
+              volunteer.isVerified ? "bg-green-50 text-green-700 border border-green-200" : "bg-yellow-50 text-yellow-800 border border-yellow-200"
+            }`}>
+              {volunteer.isVerified ? "Verified" : "Pending Verification"}
+            </span>
+          </div>
+          {error && (
+            <div className="mt-4 rounded-xl border border-red-200 bg-red-50 text-red-700 px-4 py-3 inline-block">{error}</div>
           )}
         </div>
 
-        {/* Statistics Cards */}
+        {/* KPI Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="rounded-2xl border border-white/40 bg-white/80 backdrop-blur p-5 text-center shadow-sm">
+          <div className="rounded-2xl border border-green-600/35 bg-white/80 backdrop-blur p-5 text-center shadow-sm">
             <div className="text-4xl font-extrabold text-green-600">{stats.totalAssigned}</div>
-            <div className="mt-1 text-sm text-gray-600">Total Donations Handled</div>
+            <div className="mt-1 text-sm text-gray-600">Total Assigned</div>
           </div>
-          <div className="rounded-2xl border border-white/40 bg-white/80 backdrop-blur p-5 text-center shadow-sm">
-            <div className="text-4xl font-extrabold text-blue-600">{stats.pending}</div>
+          <div className="rounded-2xl border border-green-600/35 bg-white/80 backdrop-blur p-5 text-center shadow-sm">
+            <div className="text-4xl font-extrabold text-amber-600">{stats.pending}</div>
             <div className="mt-1 text-sm text-gray-600">Pending Pickups</div>
           </div>
-          <div className="rounded-2xl border border-white/40 bg-white/80 backdrop-blur p-5 text-center shadow-sm">
-            <div className="text-4xl font-extrabold text-cyan-600">{stats.completed}</div>
-            <div className="mt-1 text-sm text-gray-600">Successfully Completed</div>
+          <div className="rounded-2xl border border-green-600/35 bg-white/80 backdrop-blur p-5 text-center shadow-sm">
+            <div className="text-4xl font-extrabold text-cyan-600">{stats.picked}</div>
+            <div className="mt-1 text-sm text-gray-600">Completed</div>
           </div>
-          <div className="rounded-2xl border border-white/40 bg-white/80 backdrop-blur p-5 text-center shadow-sm">
-            <div className="text-4xl font-extrabold text-amber-500">{stats.availableNearby}</div>
+          <div className="rounded-2xl border border-green-600/35 bg-white/80 backdrop-blur p-5 text-center shadow-sm">
+            <div className="text-4xl font-extrabold text-amber-500">{stats.available}</div>
             <div className="mt-1 text-sm text-gray-600">Available Nearby</div>
           </div>
         </div>
@@ -102,8 +95,8 @@ const VolunteerDashboard = () => {
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {/* Profile Card */}
-          <div className="rounded-2xl border border-white/40 bg-white/80 backdrop-blur p-6 shadow-sm">
-            <h3 className="text-lg font-semibold text-primary-content mb-2">👤 My Profile</h3>
+          <div className="flex flex-col justify-between rounded-2xl border border-green-600/35 bg-white/80 backdrop-blur p-6 shadow-sm">
+            <h3 className="text-lg font-semibold text-primary-content mb-2">My Profile</h3>
             <p className="text-gray-600 mb-4">View and manage your volunteer profile, preferences, and verification status.</p>
             <button
               className="w-full inline-flex items-center justify-center rounded-xl bg-secondary text-secondary-foreground/90 px-4 py-2.5 font-semibold text-sm hover:opacity-90 transition"
@@ -114,11 +107,11 @@ const VolunteerDashboard = () => {
           </div>
 
           {/* Available Donations Card */}
-          <div className="rounded-2xl border border-white/40 bg-white/80 backdrop-blur p-6 shadow-sm">
-            <h3 className="text-lg font-semibold text-primary-content mb-2">🍽️ Available Donations</h3>
+          <div className="flex flex-col justify-between rounded-2xl border border-green-600/35 bg-white/80 backdrop-blur p-6 shadow-sm">
+            <h3 className="text-lg font-semibold text-primary-content mb-2">Available Donations</h3>
             <p className="text-gray-600 mb-4">Browse and claim food donations available in your service area.</p>
             <div className="mb-4 text-sm font-semibold text-green-600">
-              {stats.availableNearby} donations available within {volunteer.serviceRadius} km
+              {stats.available} donations available within {volunteer.serviceRadius} km
             </div>
             <button
               className={`w-full inline-flex items-center justify-center rounded-xl px-4 py-2.5 font-semibold text-sm transition ${
@@ -131,12 +124,12 @@ const VolunteerDashboard = () => {
           </div>
 
           {/* Assigned Donations Card */}
-          <div className="rounded-2xl border border-white/40 bg-white/80 backdrop-blur p-6 shadow-sm">
-            <h3 className="text-lg font-semibold text-primary-content mb-2">📋 My Assignments</h3>
+          <div className="flex flex-col justify-between rounded-2xl border border-green-600/35 bg-white/80 backdrop-blur p-6 shadow-sm">
+            <h3 className="text-lg font-semibold text-primary-content mb-2">My Assignments</h3>
             <p className="text-gray-600 mb-4">Manage your claimed donations and update pickup status.</p>
             <div className="mb-4 text-sm">
               <div className="font-semibold text-amber-600">{stats.pending} pending pickups</div>
-              <div className="text-green-600">{stats.completed} completed</div>
+              <div className="text-green-600">{stats.picked} completed</div>
             </div>
             <button
               className="w-full inline-flex items-center justify-center rounded-xl bg-cyan-600 text-white px-4 py-2.5 font-semibold text-sm hover:bg-cyan-700 transition"
@@ -147,21 +140,12 @@ const VolunteerDashboard = () => {
           </div>
         </div>
 
-        {/* Recent Activity */}
-        <div className="rounded-2xl border border-white/40 bg-white/80 backdrop-blur p-6 shadow-sm">
-          <h3 className="text-lg font-semibold text-primary-content mb-4">📈 Recent Activity</h3>
-          <div className="grid gap-3">
-            <div className="rounded-lg bg-gray-50 border-l-4 border-green-500 px-4 py-2 text-sm">
-              <strong>Today 10:15 AM:</strong> Successfully picked up donation "Wedding Leftover Food"
-            </div>
-            <div className="rounded-lg bg-gray-50 border-l-4 border-blue-600 px-4 py-2 text-sm">
-              <strong>Today 11:00 AM:</strong> Claimed donation "Restaurant Surplus"
-            </div>
-            <div className="rounded-lg bg-gray-50 border-l-4 border-amber-500 px-4 py-2 text-sm">
-              <strong>Yesterday 9:30 PM:</strong> New donation "Fresh Vegetables" available in your area
-            </div>
+        {/* Loading Placeholder */}
+        {loading && (
+          <div className="rounded-2xl border border-green-600/35 bg-white/60 backdrop-blur p-6 text-center text-sm text-gray-600">
+            Syncing latest donations and assignments…
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
