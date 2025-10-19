@@ -115,7 +115,7 @@ const Footer = () => {
             <div className="flex items-center space-x-2 mb-4 md:mb-0">
               <img src="logo.png" className="h-15 w-15" alt="" />
               <span className="text-lg font-semibold text-primary-content">
-                ZeroWasteBite
+                ZeroWaste<span className="text-secondary">Bite</span>
               </span>
             </div>
 

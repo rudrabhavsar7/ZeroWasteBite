@@ -8,6 +8,36 @@ const VolunteerProfile = () => {
   const volunteer = useVolunteerStore((state) => state.volunteer);
   const user = useUserStore((state) => state.user);
   const [error] = useState("");
+  const [city, setCity] = useState("");
+
+  useEffect(() => {
+    let alive = true;
+    async function resolveCity() {
+      try {
+        const coords = volunteer?.location?.coordinates;
+        if (!Array.isArray(coords) || coords.length !== 2) return;
+        const [lon, lat] = coords; // GeoJSON: [lon, lat]
+        const cacheKey = `geo_city_${lat}_${lon}`;
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
+          if (alive) setCity(cached);
+          return;
+        }
+        const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}`;
+        const resp = await fetch(url, { headers: { Accept: "application/json" } });
+        if (!resp.ok) return;
+        const data = await resp.json();
+        const addr = data?.address || {};
+        const name = addr.city || addr.town || addr.village || addr.suburb || addr.county || addr.state || "Unknown";
+        localStorage.setItem(cacheKey, name);
+        if (alive) setCity(name);
+      } catch {
+        // ignore network errors; keep default
+      }
+    }
+    resolveCity();
+    return () => { alive = false; };
+  }, [volunteer]);
 
   if (!volunteer || !user) {
     return <div className="error">Failed to load volunteer profile.</div>;
@@ -50,7 +80,7 @@ const VolunteerProfile = () => {
             </div>
             <div><span className="font-medium">Vehicle Type:</span> <span className="ml-1 capitalize">{volunteer.vehicleType}</span></div>
             <div><span className="font-medium">Service Radius:</span> {volunteer.serviceRadius} km</div>
-            <div><span className="font-medium">Location:</span> {volunteer.location?.coordinates?.join(', ')}</div>
+            <div><span className="font-medium">Location:</span> {city || 'Resolving…'}</div>
             <div>
               <span className="font-medium">Verification Status:</span>
               <span className={`ml-2 font-bold ${volunteer.isVerified ? 'text-green-600' : 'text-red-600'}`}>

@@ -108,8 +108,10 @@ const Navbar = () => {
   return (
     <nav className="fixed top-0 right-0 px-4 py-2 w-full h-24 bg-white z-50">
       <div className="flex flex-row items-center justify-between ">
-        <img
-          src="logo.png"
+        <div
+          className="flex flex-row items-center cursor-pointer"
+          tabIndex={0}
+          role="button"
           onClick={() => {
             if (user?.role === "volunteer") {
               navigate("/volunteer");
@@ -119,8 +121,12 @@ const Navbar = () => {
               navigate("/");
             }
           }}
-          className="h-20 w-20"
-        />
+        >
+          <img src="logo.png" className="h-20 w-20" />
+          <h1 className="text-primary-content font-bold text-2xl">
+            ZeroWaste<span className="text-secondary">Bite</span>
+          </h1>
+        </div>
         <button
           onClick={() => setIsOpen(!isOpen)}
           aria-label={isOpen ? "Close menu" : "Open menu"}
