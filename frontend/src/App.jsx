@@ -20,6 +20,7 @@ import NGOLogin from "./Components/NGO/Login";
 import NGORegister from "./Components/NGO/Register";
 import NGODashboard from "./Components/NGO/Dashboard";
 import VolunteerApproval from "./Components/NGO/VolunteerApproval";
+import ManageDonations from "./Components/NGO/ManageDonations";
 
 function App() {
   return (
@@ -53,6 +54,7 @@ function App() {
         <Route path="/ngo/register" element={<NGORegister />} />
   <Route path="/ngo" element={<NGODashboard />} />
   <Route path="/ngo/volunteers" element={<VolunteerApproval />} />
+  <Route path="/ngo/donations" element={<ManageDonations />} />
       </Routes>
     </>
   );

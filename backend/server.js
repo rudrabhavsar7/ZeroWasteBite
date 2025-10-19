@@ -3,6 +3,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import dotenv from "dotenv";
 import connectDB from "./config/connectDB.js";
+import { startDonationExpiryScheduler } from "./jobs/expireDonations.js";
 dotenv.config();
 
 const app = express();
@@ -20,11 +21,12 @@ app.use(express.urlencoded({
 }))
 app.use(cookieParser());
 
-connectDB().then(
-    app.listen(PORT,()=>{
+connectDB().then(() => {
+    startDonationExpiryScheduler({ intervalMs: 60 * 1000 });
+    app.listen(PORT, () => {
         console.log("Server Running");
-    })
-);
+    });
+});
 
 //router import
 

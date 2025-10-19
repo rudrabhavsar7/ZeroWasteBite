@@ -53,6 +53,7 @@ const Navbar = () => {
             return [
               { name: "Home", path: "/ngo" },
               { name: "Approvals", path: "/ngo/volunteers" },
+              { name: "Donations", path: "/ngo/donations" },
             ];
       default:
         return [

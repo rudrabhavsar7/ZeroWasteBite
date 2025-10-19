@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 // eslint-disable-next-line no-unused-vars
 import { motion } from 'motion/react';
 import useNgoStore from '../../app/ngoStore';
@@ -6,6 +6,13 @@ import { IconBuildingCommunity, IconShieldCheck, IconShieldX, IconId, IconMapPin
 
 const NGODashboard = () => {
   const ngo = useNgoStore((s) => s.ngo);
+  const getAllDonations = useNgoStore((s) => s.getAllDonations);
+  const getVolunteers = useNgoStore((s) => s.getVolunteers);
+  const getVolunteersDonations = useNgoStore((s) => s.getVolunteersDonations);
+
+  const [availableCount, setAvailableCount] = useState(0);
+  const [volunteerCount, setVolunteerCount] = useState(0);
+  const [donationsCount, setDonationsCount] = useState(0);
 
   useEffect(() => {
     const prev = document.title;
@@ -14,6 +21,27 @@ const NGODashboard = () => {
   }, []);
 
   const addr = ngo?.address || {};
+
+  useEffect(() => {
+    const fetchCounts = async () => {
+      try {
+        const [donations, volunteers] = await Promise.all([
+          getAllDonations().catch(() => []),
+          getVolunteers().catch(() => []),
+        ]);
+        const available = donations.filter(d => d.status === 'available').length;
+
+        const receivedDonations = await getVolunteersDonations();
+
+        setAvailableCount(available);
+        setVolunteerCount(volunteers.length);
+        setDonationsCount(receivedDonations.length);
+      } catch {
+        // ignore errors; counts will remain 0
+      }
+    };
+    fetchCounts();
+  }, [getAllDonations, getVolunteers, getVolunteersDonations]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/10 via-white to-secondary/10 pt-28 pb-10 px-4">
@@ -69,16 +97,30 @@ const NGODashboard = () => {
           </div>
         </div>
 
+        {/* KPI row */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="rounded-xl border border-white/30 bg-white/70 backdrop-blur-sm p-5 shadow">
+            <div className="text-sm text-primary-content/70">Total donations received</div>
+            <div className="text-3xl font-bold text-primary-content mt-1">{donationsCount}</div>
+          </div>
+          <div className="rounded-xl border border-white/30 bg-white/70 backdrop-blur-sm p-5 shadow">
+            <div className="text-sm text-primary-content/70">Available donations</div>
+            <div className="text-3xl font-bold text-primary-content mt-1">{availableCount}</div>
+          </div>
+          <div className="rounded-xl border border-white/30 bg-white/70 backdrop-blur-sm p-5 shadow">
+            <div className="text-sm text-primary-content/70">Total volunteers</div>
+            <div className="text-3xl font-bold text-primary-content mt-1">{volunteerCount}</div>
+          </div>
+        </div>
+
         <div className="rounded-2xl border border-white/30 bg-white/70 backdrop-blur-sm shadow p-6">
           <div className="flex items-center justify-between gap-4">
-            <h2 className="text-xl font-semibold text-primary-content">Next steps</h2>
-            <a href="/ngo/volunteers" className="inline-flex items-center rounded-lg bg-secondary text-primary-content font-semibold px-4 py-2 shadow hover:shadow-md transition-shadow">Manage Volunteer Approvals</a>
+            <h2 className="text-xl font-semibold text-primary-content">Quick actions</h2>
+            <div className="flex items-center gap-2">
+              <a href="/ngo/volunteers" className="inline-flex items-center rounded-lg bg-secondary text-primary-content font-semibold px-4 py-2 shadow hover:shadow-md transition-shadow">Manage Volunteer Approvals</a>
+              <a href="/ngo/donations" className="inline-flex items-center rounded-lg bg-secondary text-primary-content font-semibold px-4 py-2 shadow hover:shadow-md transition-shadow">Manage Donations</a>
+            </div>
           </div>
-          <ul className="list-disc list-inside text-primary-content/80 mt-3 space-y-1">
-            <li>Complete verification with our team.</li>
-            <li>Coordinate with volunteers for efficient pickups.</li>
-            <li>Track donations received in future updates.</li>
-          </ul>
         </div>
       </motion.div>
     </div>

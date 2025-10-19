@@ -51,6 +51,9 @@ const donationSchema = new mongoose.Schema(
       },
     },
 
+    // Auto-computed: when this donation becomes unsafe
+    expiresAt: { type: Date },
+
     description: {
       type: String,
     },
@@ -65,10 +68,67 @@ const donationSchema = new mongoose.Schema(
       default: "available",
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
 );
 
 donationSchema.index({ location: "2dsphere" });
+donationSchema.index({ expiresAt: 1, status: 1 });
+
+// Virtual: hours remaining until expiration (rounded to 0.1h)
+donationSchema.virtual("remainingHours").get(function () {
+  if (!this.expiresAt) return null;
+  const diffMs = this.expiresAt.getTime() - Date.now();
+  return Math.max(0, Math.round((diffMs / 36e5) * 10) / 10);
+});
+
+function computeExpiresAt(doc) {
+  const safe = doc?.expiryPrediction?.safeForHours;
+  if (typeof safe === "number" && !Number.isNaN(safe)) {
+    const base = doc.createdAt instanceof Date ? doc.createdAt : new Date();
+    return new Date(base.getTime() + safe * 60 * 60 * 1000);
+  }
+  return undefined;
+}
+
+// On create (and save), set expiresAt if not already set
+donationSchema.pre("save", function (next) {
+  if (!this.expiresAt) {
+    const exp = computeExpiresAt(this);
+    if (exp) this.expiresAt = exp;
+  }
+  next();
+});
+
+// If safeForHours is updated via findOneAndUpdate, recompute expiresAt
+donationSchema.pre("findOneAndUpdate", function (next) {
+  const update = this.getUpdate() || {};
+  const direct = update?.expiryPrediction?.safeForHours;
+  const setPath = update?.$set?.["expiryPrediction.safeForHours"];
+  const newSafe = typeof direct === "number" ? direct : typeof setPath === "number" ? setPath : undefined;
+  if (typeof newSafe === "number") {
+    this.set("_newSafeForHours", newSafe);
+  }
+  next();
+});
+
+donationSchema.post("findOneAndUpdate", async function (res) {
+  try {
+    const newSafe = this.get("_newSafeForHours");
+    if (typeof newSafe === "number" && res) {
+      const createdAt = res.createdAt instanceof Date ? res.createdAt : new Date();
+      const expiresAt = new Date(createdAt.getTime() + newSafe * 60 * 60 * 1000);
+      if (!res.expiresAt || res.expiresAt.getTime() !== expiresAt.getTime()) {
+        await this.model.updateOne({ _id: res._id }, { $set: { expiresAt } });
+      }
+    }
+  } catch (err) {
+    console.error("Donation expiresAt recompute error:", err);
+  }
+});
 
 // donationSchema.post("save", async function () {
 //   const { riskLevel } = this.expiryPrediction;
