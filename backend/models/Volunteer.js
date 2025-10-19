@@ -31,6 +31,10 @@ const volunteerSchema = new mongoose.Schema(
     isVerified:{
         type:Boolean,
         default:false
+    },
+    VerifiedBy:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "NGO",
     }
   },
   {

@@ -123,6 +123,7 @@ const loginVolunteer = asyncHandler(async (req, res) => {
         200,
         {
           volunteer,
+          user: loggedInUser,
           accessToken,
           refreshToken,
         },
