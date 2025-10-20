@@ -10,6 +10,7 @@ import {
 } from "../mlModel/riskModel.js";
 import { Volunteer } from "../models/Volunteer.js";
 import { sendMail } from "../utils/NodeMailer.js";
+import { NGO } from "../models/NGO.js";
 
 const addDonation = asyncHandler(async (req, res) => {
   const user = req.user;
@@ -52,10 +53,6 @@ const addDonation = asyncHandler(async (req, res) => {
 
   if (!riskLevel) throw new ApiError(500, "Risk Prediction Error");
   if (!safeForHours) throw new ApiError(500, "Safe For Hours Prediction Error");
-
-  // const location = user.location.coordinates;
-
-  // console.log(location); 
 
   const donation = await Donation.create({
     donor: user._id,
@@ -211,6 +208,17 @@ const claimDonation = asyncHandler(async (req, res) => {
   donation.claimedBy = user._id;
 
   await donation.save({ validateBeforeSave: false });
+
+  const volunteer = await Volunteer.findOne({ userId: user._id });
+  
+  if(!volunteer){
+    throw new ApiError(404, "Volunteer Not Found");
+  }
+
+  const ngo = await NGO.findById(volunteer.VerifiedBy);
+
+  ngo.donationsReceived.push(donation._id);
+  await ngo.save({ validateBeforeSave: false });
 
   return res
     .status(200)
