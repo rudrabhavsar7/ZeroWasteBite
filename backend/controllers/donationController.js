@@ -53,9 +53,9 @@ const addDonation = asyncHandler(async (req, res) => {
   if (!riskLevel) throw new ApiError(500, "Risk Prediction Error");
   if (!safeForHours) throw new ApiError(500, "Safe For Hours Prediction Error");
 
-  const location = user.location.coordinates;
+  // const location = user.location.coordinates;
 
-  console.log(location);
+  // console.log(location); 
 
   const donation = await Donation.create({
     donor: user._id,
@@ -72,7 +72,7 @@ const addDonation = asyncHandler(async (req, res) => {
     },
     description,
     location: {
-      coordinates: location,
+      coordinates,
     },
   });
 
